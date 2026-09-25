@@ -2,11 +2,11 @@
 /vendor
 /node_modules
 
-backend/.env
-backend/vendor
-backend/node_modules
+backend/laravel/.env
+backend/laravel/vendor
+backend/laravel/node_modules
 
-frontend/node_modules
+frontend/viajes-frontend/node_modules
 
 .log
 
