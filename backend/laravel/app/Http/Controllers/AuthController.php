@@ -6,7 +6,10 @@ use Illuminate\Http\Request;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules\Password;
-
+use Firebase\JWT\JWT;
+use Firebase\JWT\Key;
+use App\Services\TokenService;
+use App\Models\RefreshToken;
 
 class AuthController extends Controller
 {
@@ -45,5 +48,52 @@ class AuthController extends Controller
     ], 201);
     }
 
+    public function login(Request $request, TokenService $tokenService) {
+        $request->validate([
+            'correo' => 'required|email',
+            'password' => 'required'
+        ]);
+
+        $usuario = User::where(
+            'correo',
+            $request->correo
+        )->first();
+
+        if (!$usuario || !Hash::check(
+
+            $request->password,
+            $usuario->password_hash
+        )
+        
+    ) {
+        return response()->json([
+            'success' => false,
+            'error' => [
+                'code' => 'INVALID_CREDENTIALS',
+                'message' => 'Correo o contraseña inválidos'
+            ]
+        ], 401);
+    }
+
+    $accessToken = $tokenService->generarAccessToken($usuario);
+
+    $refreshToken = $tokenService->generarRefreshToken();
+
+    RefreshToken::create([
+        'user_id' => $usuario->id,
+        'token' => $refreshToken,
+        'expires_at' => now()->addDays(30)
+    ]);
+
+    return response()->json([
+        'success' => true,
+        'data' => [
+            'access_token' => $accessToken,
+            'refresh_token' => $refreshToken,
+            'expires_in' => 900
+        ]
+    ]);
+
+    }
 
 }
