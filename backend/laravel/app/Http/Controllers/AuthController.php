@@ -10,6 +10,7 @@ use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
 use App\Services\TokenService;
 use App\Models\RefreshToken;
+use App\Models\TokenRevocado;
 
 class AuthController extends Controller
 {
@@ -94,6 +95,29 @@ class AuthController extends Controller
         ]
     ]);
 
+    }
+
+    public function logout(Request $request) {
+
+        $payload = $request->attributes->get('token_payload');
+
+        TokenRevocado::create([
+            'jti' => $payload->jti,
+            'revoked_at' => now()
+        ]);
+
+
+        RefreshToken::where(
+            'user_id',
+            $payload->sub
+        )
+        ->update([
+            'revoked' => true
+        ]);
+
+        return response()->json([
+            'success' => true
+        ]);
     }
 
 }

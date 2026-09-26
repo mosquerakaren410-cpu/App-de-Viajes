@@ -15,3 +15,10 @@ Route::middleware('auth.token')
             ]);
         });
     });
+
+Route::middleware('auth.token')
+        ->group(function () {
+
+            Route::post('/auth/logout', [AuthController::class, 'logout']);
+
+        });

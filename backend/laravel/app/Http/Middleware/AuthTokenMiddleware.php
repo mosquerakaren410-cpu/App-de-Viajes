@@ -43,9 +43,12 @@ class AuthTokenMiddleware
             $tokenService =
                 app(TokenService::class);
 
-            $payload =
-                $tokenService
-                    ->validarAccessToken($token);
+            $payload = $tokenService->validarAccessToken($token);
+
+            $request->attributes->set(
+                'token_payload',
+                $payload
+            );
 
             if (
                 TokenRevocado::where(
