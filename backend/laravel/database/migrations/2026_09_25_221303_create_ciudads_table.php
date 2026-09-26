@@ -11,15 +11,14 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('users', function (Blueprint $table) {
+        Schema::create('ciudades', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('pais_id')->constrained('paises')->onDelete('cascade');
             $table->string('nombre');
-            $table->string('correo')->unique();
-            $table->string('password_hash');
-            $table->string('idioma')->default('es');
+            $table->decimal('latitud', 10, 7)->nullable();
+            $table->decimal('longitud', 10, 7)->nullable();
             $table->timestamps();
         });
-
     }
 
     /**
@@ -27,6 +26,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('users');
+        Schema::dropIfExists('ciudades');
     }
 };
