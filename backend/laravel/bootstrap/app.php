@@ -15,6 +15,16 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         //
     })
+
+    ->withMiddleware(function ($middleware) {
+
+        $middleware->alias([
+            'auth.token' => App\Http\Middleware\AuthTokenMiddleware::class,
+        ]);
+
+    })
+
+
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(
             fn (Request $request) => $request->is('api/*') || $request->expectsJson(),
