@@ -25,4 +25,6 @@ Route::middleware('auth.token')
             Route::get('/paises', [PaisController::class, 'index']);
             Route::get('/paises/{id}/ciudades', [PaisController::class, 'ciudades']);
 
+
+            
         });
