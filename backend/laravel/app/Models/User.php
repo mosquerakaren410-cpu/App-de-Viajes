@@ -6,6 +6,7 @@ use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use App\Models\Consulta;
 
 class User extends Authenticatable
 {
@@ -19,6 +20,11 @@ class User extends Authenticatable
         'password_hash',
         'idioma'
     ];
+
+    public function consultas()
+    {
+        return $this->hasMany(Consulta::class);
+    }
 
     protected $hidden = [
         'password_hash',

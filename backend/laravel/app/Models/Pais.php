@@ -21,4 +21,11 @@ class Pais extends Model
         );
 
     }
+
+    public function moneda() {
+
+        return $this->belongsTo(
+            Moneda::class
+        );
+    }
 }

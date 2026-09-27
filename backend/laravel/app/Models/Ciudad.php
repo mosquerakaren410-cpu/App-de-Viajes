@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use App\Models\Consulta;
 
 class Ciudad extends Model
 {
@@ -15,9 +16,18 @@ class Ciudad extends Model
         'longitud'
     ];
 
+    
     public function pais() {
-
+        
         return $this->belongsTo(Pais::class);
+        
+        }
 
-    }
+    public function consultas() {
+
+            return $this->hasMany(Consulta::class);
+
+        }
+
 }
+        
