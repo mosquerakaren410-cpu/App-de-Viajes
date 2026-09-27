@@ -3,6 +3,8 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\PaisController;
+use App\Services\ClimaServices;
+use App\Services\MonedaServices;
 
 Route::post('/auth/register', [AuthController::class, 'register']);
 Route::post('/auth/login', [AuthController::class, 'login']);
@@ -28,3 +30,16 @@ Route::middleware('auth.token')
 
             
         });
+
+Route::get('/test-clima', function (
+    ClimaServices $service
+) {
+    return $service->obtenerClima('Tokyo');
+});
+
+
+Route::get('/test-moneda', function (
+    MonedaServices $service
+) {
+    return $service->obtenerTasa('INR');
+});
