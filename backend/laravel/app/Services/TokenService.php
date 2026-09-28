@@ -2,85 +2,68 @@
 
 namespace App\Services;
 
+use App\Models\User;
 use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
-use Illuminate\Support\Str;
 use Illuminate\Encryption\Encrypter;
+use Illuminate\Support\Str;
 
+class TokenService
+{
+    public function generarAccessToken(User $user, int $ttlSeconds = 900): string
+    {
+        $secret = $this->secret();
+        $signingKey = $this->deriveKey($secret, 'jwt-firma');
+        $encryptionKey = $this->deriveKey($secret, 'jwt-cifrado');
 
-class TokenService {
-    public function generarAccessToken($user) {
-        $secreto = base64_decode(env("APP_TOKEN_SECRET"));
-
-        $claveFirma = hash_hkdf(
-            "sha256",
-            $secreto,
-            32,
-            "jwt-firma"
-        );
-
-        $claveCifrado = hash_hkdf(
-            "sha256",
-            $secreto,
-            32,
-            "jwt-cifrado"
-        );
+        $now = now()->timestamp;
 
         $payload = [
             'sub' => $user->id,
-            'iat' => time(),
-            'exp' => time() + 900,
+            'iat' => $now,
+            'exp' => $now + $ttlSeconds,
             'jti' => Str::uuid()->toString(),
-            'idioma' => $user->idioma
+            'idioma' => $user->idioma,
         ];
 
-        $jwt = JWT::encode(
-            $payload,
-            $claveFirma,
-            'HS256'
-        );
+        $jwt = JWT::encode($payload, $signingKey, 'HS256');
 
-        $encrypter = new Encrypter(
-            $claveCifrado,
-            'AES-256-GCM'
-        );
+        $encrypter = new Encrypter($encryptionKey, 'AES-256-GCM');
 
         return $encrypter->encryptString($jwt);
     }
 
-    public function generarRefreshToken() {
+    public function generarRefreshToken(): string
+    {
         return Str::random(120);
     }
 
-    public function validarAccessToken(string $token) {
-        
-        $secreto = base64_decode(env("APP_TOKEN_SECRET"));
+    public function validarAccessToken(string $token): object
+    {
+        $secret = $this->secret();
+        $signingKey = $this->deriveKey($secret, 'jwt-firma');
+        $encryptionKey = $this->deriveKey($secret, 'jwt-cifrado');
 
-        $claveFirma = hash_hkdf(
-            "sha256",
-            $secreto,
-            32,
-            "jwt-firma"
-        );
-
-        $claveCifrado = hash_hkdf(
-            "sha256",
-            $secreto,
-            32,
-            "jwt-cifrado"
-        );
-
-        $encrypter = new Encrypter(
-            $claveCifrado,
-            'AES-256-GCM'
-        );
-
+        $encrypter = new Encrypter($encryptionKey, 'AES-256-GCM');
         $jwt = $encrypter->decryptString($token);
 
-        return JWT::decode(
-            $jwt,
-            new Key($claveFirma, 'HS256')
-        );
+        return JWT::decode($jwt, new Key($signingKey, 'HS256'));
+    }
 
+    private function secret(): string
+    {
+        $encoded = config('tokens.secret');
+        $secret = base64_decode((string) $encoded, true);
+
+        if ($secret === false || strlen($secret) !== 32) {
+            throw new \RuntimeException('APP_TOKEN_SECRET debe ser una cadena Base64 de 32 bytes.');
+        }
+
+        return $secret;
+    }
+
+    private function deriveKey(string $secret, string $purpose): string
+    {
+        return hash_hkdf('sha256', $secret, 32, $purpose);
     }
 }
