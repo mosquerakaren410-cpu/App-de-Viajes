@@ -12,4 +12,14 @@ class RefreshToken extends Model
         'expires_at',
         'revoked'
     ];
+
+    protected $casts = [
+        'expires_at' => 'datetime',
+        'revoked' => 'boolean',
+    ];
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
 }

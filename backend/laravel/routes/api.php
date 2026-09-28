@@ -9,6 +9,7 @@ use App\Services\MonedaServices;
 
 Route::post('/auth/register', [AuthController::class, 'register']);
 Route::post('/auth/login', [AuthController::class, 'login']);
+Route::post('/auth/refresh', [AuthController::class, 'refresh']);
 
 Route::middleware('auth.token')
     ->group(function () {

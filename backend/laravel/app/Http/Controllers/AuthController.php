@@ -97,6 +97,57 @@ class AuthController extends Controller
 
     }
 
+
+    public function refresh(Request $request, TokenService $tokenService)
+{
+    $request->validate([
+        'refresh_token' => 'required|string'
+    ]);
+
+    $refreshToken = RefreshToken::where(
+        'token',
+        $request->refresh_token
+    )->first();
+
+    if (
+        !$refreshToken ||
+        $refreshToken->revoked ||
+        $refreshToken->expires_at < now()
+    ) {
+        return response()->json([
+            'success' => false,
+            'error' => [
+                'code' => 'INVALID_REFRESH_TOKEN',
+                'message' => 'El refresh token no es válido'
+            ]
+        ], 401);
+    }
+
+    $usuario = User::find($refreshToken->user_id);
+
+    if (!$usuario) {
+        return response()->json([
+            'success' => false,
+            'error' => [
+                'code' => 'INVALID_REFRESH_TOKEN',
+                'message' => 'El usuario no existe'
+            ]
+        ], 401);
+    }
+
+    $accessToken = $tokenService->generarAccessToken($usuario);
+
+    return response()->json([
+        'success' => true,
+        'data' => [
+            'access_token' => $accessToken,
+            'refresh_token' => $refreshToken->token,
+            'expires_in' => 900
+        ]
+    ]);
+}
+
+
     public function logout(Request $request) {
 
         $payload = $request->attributes->get('token_payload');
